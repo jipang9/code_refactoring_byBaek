@@ -1,45 +1,48 @@
 package me.whiteship.refactoring._01_smell_mysterious_name._01_before;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import org.kohsuke.github.GHIssue;
-import org.kohsuke.github.GHIssueComment;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 public class StudyDashboard {
 
-    private Set<String> usernames = new HashSet<>();
+  private void printParticipants(int eventId) throws IOException {
+    GHIssue issue = getGhIssue(eventId);
+    Set<String> participants = getUsernames(issue);
+    print(participants);
+  }
 
-    private Set<String> reviews = new HashSet<>();
+  private void print(Set<String> participants) {
+    participants.forEach(System.out::println);
+  }
 
-    private void studyReviews(GHIssue issue) throws IOException {
-        List<GHIssueComment> comments = issue.getComments();
-        for (GHIssueComment comment : comments) {
-            usernames.add(comment.getUserName());
-            reviews.add(comment.getBody());
-        }
-    }
+  private void printReviewers() throws IOException {
+    GHIssue issue = getGhIssue(30);
+    Set<String> reviewers = getUsernames(issue);
+    print(reviewers);
+  }
 
-    public Set<String> getUsernames() {
-        return usernames;
-    }
+  private GHIssue getGhIssue(int eventId) throws IOException {
+    GitHub gitHub = GitHub.connect();
+    GHRepository repository = gitHub.getRepository("whiteship/live-study");
+    GHIssue issue = repository.getIssue(eventId);
+    return issue;
+  }
 
-    public Set<String> getReviews() {
-        return reviews;
-    }
+  public Set<String> getUsernames(GHIssue issue) throws IOException {
+    Set<String> usernames = new HashSet<>();
+    issue.getComments().forEach(user -> usernames.add(user.getUserName()));
+    return usernames;
+  }
 
-    public static void main(String[] args) throws IOException {
-        GitHub gitHub = GitHub.connect();
-        GHRepository repository = gitHub.getRepository("whiteship/live-study");
-        GHIssue issue = repository.getIssue(30);
+  public static void main(String[] args) throws IOException {
 
-        StudyDashboard studyDashboard = new StudyDashboard();
-        studyDashboard.studyReviews(issue);
-        studyDashboard.getUsernames().forEach(System.out::println);
-        studyDashboard.getReviews().forEach(System.out::println);
-    }
+    StudyDashboard studyDashboard = new StudyDashboard();
+    studyDashboard.printReviewers();
+    studyDashboard.printParticipants(15);
+
+  }
 }
